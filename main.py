@@ -3,6 +3,8 @@ import sys
 import os
 import random
 import yaml
+import pandas as pd
+import time
 
 from src.place import Place
 
@@ -119,6 +121,7 @@ def run(screen, main_original, map_original, pin_image, font, clock, choosen_ima
     guess_button_rect = None
     next_button_rect = None
     show_next_button = True
+    score = 0.0
 
     end = False
 
@@ -155,7 +158,7 @@ def run(screen, main_original, map_original, pin_image, font, clock, choosen_ima
                     
                 elif show_next_button and next_button_rect and next_button_rect.collidepoint(mouse_x, mouse_y) and end:
                     print("➡️ Botão 'Próximo' clicado!")
-                    return  
+                    return score
 
                 elif not end:
                     pin_position = {
@@ -221,7 +224,7 @@ def choose_image(yaml_path, done_images):
     image_data = get_yaml_data(yaml_path, chosen_image)
     if image_data:
         return Place(
-                path=os.path.join("assets/guessing", chosen_image), 
+                path=os.path.join("assets", "guessing", chosen_image), 
                 position=(image_data['pos_x'], image_data['pos_y']), 
                 radius=image_data['radius'], 
                 name=chosen_image
@@ -340,20 +343,31 @@ def start_screen(screen, WIN_WIDTH, WIN_HEIGHT, font, background_image_path):
         pygame.display.flip()
         clock.tick(30)
         
+  
+def leader_board():
+    pass
         
+              
 def main():
     WIN_WIDTH, WIN_HEIGHT = 1080, 720
     screen = pygame.display.set_mode((WIN_WIDTH, WIN_HEIGHT), pygame.RESIZABLE)
     pygame.display.set_caption("UDESC vista de cima")
     font = pygame.font.SysFont("Arial", 32, bold=True)
-    background_image_path = os.path.join("assets/main", "main.png")
+    background_image_path = os.path.join("assets", "main", "main.png")
 
-    start_screen(screen, WIN_WIDTH, WIN_HEIGHT, font, background_image_path)
-    
+    user_name = start_screen(screen, WIN_WIDTH, WIN_HEIGHT, font, background_image_path)
+    user_score = 0
     
     done_images = []
     
-    for i in range(2):
+    try:
+        df = pd.read_csv(os.path.join("assets", "scores.csv"))
+    except FileNotFoundError:
+        df = pd.DataFrame(columns=["name", "points", "time", "date"])
+        
+    
+    time_start = time.time()
+    for i in range(1):
         WIN_WIDTH, WIN_HEIGHT = 1080, 720
         screen = pygame.display.set_mode((WIN_WIDTH, WIN_HEIGHT), pygame.RESIZABLE)
         pygame.display.set_caption("UDESC vista de cima")
@@ -380,7 +394,23 @@ def main():
         choosen_image.draw_circle()
         
         
-        run(screen, main_original, map_original, pin_image, font, clock, choosen_image)
+        user_score += run(screen, main_original, map_original, pin_image, font, clock, choosen_image)
+    end_time = time.time()
+    
+    new_row = {
+        "name": user_name.lower(),
+        "points": user_score,
+        "time": end_time - time_start,
+        "date": time.strftime("%Y-%m-%d %H:%M:%S")  # por exemplo, data/hora atual
+    }
+
+    df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
+        
+    df.to_csv(os.path.join("assets", "scores.csv"), index=False)
+    
+    leader_board()
+    
+    pygame.quit()
 
 
 if __name__ == "__main__":

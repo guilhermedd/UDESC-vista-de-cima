@@ -5,3 +5,5 @@ class User:
 
     def get_info(self):
         return f"Username: {self.username}, Pontuação: {self.pontuation}"
+    
+    

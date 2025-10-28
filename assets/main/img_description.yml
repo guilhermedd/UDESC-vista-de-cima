@@ -1,22 +1,21 @@
-# Note a ausência dos hífens e o nome da imagem como chave
-images:
-  "place_holder1.jpg":
-    pos_x: 100
-    pos_y: 200
-    radius: 50
-  "place_holder2.jpg":
-    pos_x: 150
-    pos_y: 300
-    radius: 20
-  "place_holder3.jpg":
-    pos_x: 300
-    pos_y: 600
-    radius: 10
-  "place_holder4.jpeg":
-    pos_x: 900
-    pos_y: 1000
-    radius: 100
-  "place_holder5.jpg":
-    pos_x: 400
-    pos_y: 800
-    radius: 200
+place_holder1.jpg:
+  radius: 72.80109889280519
+  x: 465
+  y: 100
+place_holder2.jpg:
+  radius: 48.25971404805462
+  x: 313
+  y: 309
+place_holder3.jpg:
+  radius: 49.51767361255979
+  x: 570
+  y: 388
+place_holder5.jpg:
+  radius: 88.60022573334675
+  x: 403
+  y: 385
+place_holder4.jpeg:
+  radius: 88.60022573334675
+  x: 403
+  y: 385
+

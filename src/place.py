@@ -76,6 +76,3 @@ class Place:
         text_rect = text_surface.get_rect(center=(mid_x, mid_y - 10))
 
         self.screen.blit(text_surface, text_rect)
-
-    def __str__(self):
-        return f"Place(path={self.path}, position={self.position}, radius={self.radius})"

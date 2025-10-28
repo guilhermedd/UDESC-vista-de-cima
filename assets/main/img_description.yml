@@ -1,0 +1,22 @@
+# Note a ausência dos hífens e o nome da imagem como chave
+images:
+  "place_holder1.jpg":
+    pos_x: 100
+    pos_y: 200
+    radius: 50
+  "place_holder2.jpg":
+    pos_x: 150
+    pos_y: 300
+    radius: 20
+  "place_holder3.jpg":
+    pos_x: 300
+    pos_y: 600
+    radius: 10
+  "place_holder4.jpeg":
+    pos_x: 900
+    pos_y: 1000
+    radius: 100
+  "place_holder5.jpg":
+    pos_x: 400
+    pos_y: 800
+    radius: 200

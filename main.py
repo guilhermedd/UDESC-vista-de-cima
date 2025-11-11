@@ -149,6 +149,8 @@ def run(screen, main_original, map_original, pin_image, font, clock, choosen_ima
                 elif show_guess_button and guess_button_rect and guess_button_rect.collidepoint(mouse_x, mouse_y):
                     score = choosen_image.get_score((pin_position['x'], pin_position['y']))
                     choosen_image.draw_line(camera_y=camera_y)
+                    choosen_image.draw_circle(camera_y=camera_y)
+                    
                     
                     show_guess_button = False
                     guess_button_rect = None
@@ -195,7 +197,6 @@ def run(screen, main_original, map_original, pin_image, font, clock, choosen_ima
 
             # Desenha o círculo e a linha apenas se estivermos vendo o mapa
             if not showing_main:
-                choosen_image.draw_circle(camera_y=camera_y)
                 choosen_image.draw_line(camera_y=camera_y, font=font)
 
             guess_button_rect, next_button_rect = draw_guess_and_next_buttons(screen, WIN_WIDTH, WIN_HEIGHT, font)

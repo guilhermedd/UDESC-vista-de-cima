@@ -275,7 +275,8 @@ def main():
     YAML_PATH = "assets/main/img_description.yml"
     WIN_WIDTH, WIN_HEIGHT = 1080, 720
     yaml_data = get_yaml_data(YAML_PATH)
-    done_images = [yaml_data.keys()]
+    done_images = list(yaml_data.keys())
+
     
     while True:
         screen = pygame.display.set_mode((WIN_WIDTH, WIN_HEIGHT), pygame.RESIZABLE)

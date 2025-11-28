@@ -125,6 +125,9 @@ def run(screen, main_original, map_original, pin_image, font, clock, choosen_ima
 
     end = False
 
+    mini_x, mini_y, mini_width, mini_height = 0, 0, 0, 0 # Valores iniciais seguros
+    # ---------------------------------
+
     running = True
     while running:
         for event in pygame.event.get():
@@ -259,6 +262,125 @@ def draw_text_with_border(screen, text, font, text_color, border_color, x, y, bo
     # Desenha o texto principal por cima
     screen.blit(text_surface, text_rect)
 
+def get_score_message(score):
+    """Retorna a mensagem com base na pontuação."""
+    if 0 <= score <= 99:
+        return ["Primeiro dia de aula?"]
+    elif 100 <= score <= 199:
+        return ["Tem muita coisa para explorar ainda"]
+    elif 200 <= score <= 299:
+        return ["Você precisa sair mais do seu Bloco"]
+    elif 300 <= score <= 399:
+        return ["Você não se perde mais na UDESC"]
+    elif 400 <= score <= 499:
+        return ["Você já pode se considerar veterano"]
+    elif score == 500:
+        return ["Você conhece a UDESC como a palma da sua mão"]
+    else: # Para pontuações fora do esperado (e.g., > 500 ou negativas)
+        return ["Pontuação final registrada!"]
+
+def score_message_screen(screen, font, clock, background_image_path, user_name, score):
+    """Exibe a pontuação final e a mensagem baseada no score do jogador."""
+    WIN_WIDTH, WIN_HEIGHT = screen.get_size()
+    
+    # Carrega e escala o fundo
+    try:
+        background = pygame.image.load(background_image_path).convert()
+        background = pygame.transform.smoothscale(background, (WIN_WIDTH, WIN_HEIGHT))
+    except pygame.error:
+        # Fallback para cor sólida se a imagem falhar
+        background = pygame.Surface((WIN_WIDTH, WIN_HEIGHT))
+        background.fill((10, 20, 40))
+
+    title_font = pygame.font.SysFont("Arial", 54, bold=True)
+    message_font = pygame.font.SysFont("Arial", 36, bold=False)
+
+    # Obtém as mensagens baseadas no score
+    messages = get_score_message(score)
+
+    running = True
+    while running:
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+
+        # Botão Fechar
+        button_text = font.render("Fechar Jogo", True, (255, 255, 255))
+        padding_x, padding_y = 30, 15
+        button_width = button_text.get_width() + padding_x * 2
+        button_height = button_text.get_height() + padding_y * 2
+        button_x = WIN_WIDTH // 2 - button_width // 2
+        button_y = WIN_HEIGHT - button_height - 30
+        button_rect = pygame.Rect(button_x, button_y, button_width, button_height)
+
+        # --- Loop de Eventos ---
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            
+            if event.type == pygame.VIDEORESIZE:
+                WIN_WIDTH, WIN_HEIGHT = event.w, event.h
+                screen = pygame.display.set_mode((WIN_WIDTH, WIN_HEIGHT), pygame.RESIZABLE)
+                try:
+                    background = pygame.transform.smoothscale(background.copy(), (WIN_WIDTH, WIN_HEIGHT))
+                except:
+                    background = pygame.Surface((WIN_WIDTH, WIN_HEIGHT))
+                    background.fill((10, 20, 40))
+
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                if button_rect.collidepoint(event.pos):
+                    running = False # Sai do loop, encerrando o jogo
+
+        screen.blit(background, (0, 0))
+        
+        # Painel de fundo para o texto
+        panel_width = WIN_WIDTH - 160
+        panel_height = WIN_HEIGHT - 200
+        panel_x = 80
+        panel_y = 50
+        
+        overlay = pygame.Surface((panel_width, panel_height), pygame.SRCALPHA)
+        overlay.fill((0, 0, 0, 180)) # Fundo semitransparente
+        pygame.draw.rect(overlay, (255, 255, 255, 40), overlay.get_rect(), 2, border_radius=10)
+        screen.blit(overlay, (panel_x, panel_y))
+        
+        # Título
+        draw_text_with_border(
+            screen, "Resultado Final", title_font, 
+            (255, 255, 255), (0, 0, 0), 
+            WIN_WIDTH // 2, 80, 2
+        )
+
+        # Nome e Pontuação
+        y_pos = 180
+        
+        # score_text = f"Parabéns, {user_name.title()}!"
+        # score_surface = message_font.render(score_text, True, (255, 255, 255))
+        # screen.blit(score_surface, (WIN_WIDTH // 2 - score_surface.get_width() // 2, y_pos))
+        # y_pos += 50
+        
+        points_text = f"Sua Pontuação Total: {int(score)} pontos"
+        points_surface = message_font.render(points_text, True, (255, 215, 0))
+        screen.blit(points_surface, (WIN_WIDTH // 2 - points_surface.get_width() // 2, y_pos))
+        y_pos += 80
+
+        # Mensagens (Frases)
+        for msg in messages:
+            msg_surface = title_font.render(msg, True, (0, 255, 0)) # Frases em verde
+            screen.blit(msg_surface, (WIN_WIDTH // 2 - msg_surface.get_width() // 2, y_pos))
+            y_pos += 60 # Espaçamento entre as linhas de texto
+            
+        # Botão Fechar
+        hover = button_rect.collidepoint(mouse_x, mouse_y)
+        color = (200, 0, 0) if hover else (150, 0, 0)
+
+        pygame.draw.rect(screen, color, button_rect, border_radius=10)
+        pygame.draw.rect(screen, (255, 255, 255), button_rect, 2, border_radius=10)
+        
+        text_x_pos = button_rect.x + (button_rect.width - button_text.get_width()) // 2
+        text_y_pos = button_rect.y + (button_rect.height - button_text.get_height()) // 2
+        screen.blit(button_text, (text_x_pos, text_y_pos))
+
+        pygame.display.flip()
+        clock.tick(30)
 
 def start_screen(screen, WIN_WIDTH, WIN_HEIGHT, font, background_image_path):
     """Mostra a tela inicial com uma imagem de fundo e botão 'Começar'."""
@@ -376,152 +498,6 @@ def start_screen(screen, WIN_WIDTH, WIN_HEIGHT, font, background_image_path):
         pygame.display.flip()
         clock.tick(30)        
   
-  
-def leader_board(screen, font, clock, background_image_path):
-    """Exibe a tela de leaderboard com os 10 melhores scores."""
-    WIN_WIDTH, WIN_HEIGHT = screen.get_size()
-    
-    # Carrega e escala o fundo
-    try:
-        background = pygame.image.load(background_image_path).convert()
-        background = pygame.transform.smoothscale(background, (WIN_WIDTH, WIN_HEIGHT))
-    except pygame.error:
-        # Fallback para cor sólida se a imagem falhar
-        background = pygame.Surface((WIN_WIDTH, WIN_HEIGHT))
-        background.fill((10, 20, 40))
-
-    # Define fontes
-    title_font = pygame.font.SysFont("Arial", 64, bold=True)
-    header_font = pygame.font.SysFont("Arial", 36, bold=True)
-    score_font = pygame.font.SysFont("Arial", 32)
-
-    # Carrega e processa os dados
-    try:
-        df = pd.read_csv(os.path.join("assets", "scores.csv"))
-        if df.empty:
-            raise FileNotFoundError # Trata como se não houvesse dados
-            
-        # Garante que os tipos estão corretos
-        df['points'] = pd.to_numeric(df['points'])
-        df['time'] = pd.to_numeric(df['time'])
-
-        # 1. Ordena por pontos (maior primeiro) e tempo (menor primeiro)
-        df_sorted = df.sort_values(by=['points', 'time'], ascending=[False, True])
-        
-        # 2. Pega o melhor score de cada jogador
-        best_scores = df_sorted.drop_duplicates(subset='name', keep='first')
-        
-        # 3. Pega os 10 melhores
-        top_10 = best_scores.head(10)
-        
-    except (FileNotFoundError, pd.errors.EmptyDataError):
-        top_10 = pd.DataFrame(columns=["name", "points", "time"]) # DataFrame vazio
-
-    running = True
-    while running:
-        mouse_x, mouse_y = pygame.mouse.get_pos()
-
-        button_text = font.render("Fechar", True, (255, 255, 255))
-        padding_x, padding_y = 30, 15
-        button_width = button_text.get_width() + padding_x * 2
-        button_height = button_text.get_height() + padding_y * 2
-        button_x = WIN_WIDTH // 2 - button_width // 2
-        button_y = WIN_HEIGHT - button_height - 30 # Y-pos do topo do botão
-        button_rect = pygame.Rect(button_x, button_y, button_width, button_height)
-
-        # --- Loop de Eventos ---
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-            
-            if event.type == pygame.VIDEORESIZE:
-                WIN_WIDTH, WIN_HEIGHT = event.w, event.h
-                screen = pygame.display.set_mode((WIN_WIDTH, WIN_HEIGHT), pygame.RESIZABLE)
-                try:
-                    background = pygame.transform.smoothscale(background.copy(), (WIN_WIDTH, WIN_HEIGHT))
-                except: # Lida com o fallback
-                    background = pygame.Surface((WIN_WIDTH, WIN_HEIGHT))
-                    background.fill((10, 20, 40))
-
-            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                if button_rect.collidepoint(event.pos):
-                    running = False # Sai do loop do leaderboard
-
-        screen.blit(background, (0, 0))
-        
-        panel_margin_x = 80
-        panel_y_top = 50
-        
-        # Calcula as dimensões
-        panel_x = panel_margin_x
-        panel_y = panel_y_top
-        panel_width = WIN_WIDTH - (panel_margin_x * 2)
-        panel_height = (button_y - 20) - panel_y_top # Termina 20px acima do botão
-        
-        overlay = pygame.Surface((panel_width, panel_height), pygame.SRCALPHA)
-        
-        overlay.fill((0, 0, 0, 180))
-        
-        pygame.draw.rect(overlay, (255, 255, 255, 40), overlay.get_rect(), 2, border_radius=10)
-
-        # Desenha o painel na tela principal
-        screen.blit(overlay, (panel_x, panel_y))
-        
-        draw_text_with_border(
-            screen, "Leaderboard", title_font, 
-            (255, 255, 255), (0, 0, 0), 
-            WIN_WIDTH // 2, 80, 2
-        )
-
-        # Cabeçalhos (Ajuste as posições X se necessário para caber no painel)
-        padding_total = panel_x + 50 # padding de 50px dentro do painel
-        col_rank = padding_total
-        col_name = padding_total + 100
-        col_points = panel_width - 250 # Alinha à direita
-        col_time = panel_width - 80   # Alinha à direita
-        
-        y_header = 180
-        screen.blit(header_font.render("Rank", True, (255, 215, 0)), (col_rank, y_header))
-        screen.blit(header_font.render("Nome", True, (255, 215, 0)), (col_name, y_header))
-        screen.blit(header_font.render("Pontos", True, (255, 215, 0)), (col_points, y_header))
-        screen.blit(header_font.render("Tempo", True, (255, 215, 0)), (col_time, y_header))
-        
-        pygame.draw.line(screen, (255, 215, 0), 
-                         (col_rank, y_header + 40), 
-                         (col_time + header_font.size("Tempo")[0], y_header + 40), 2)
-
-        # Scores
-        y_offset = y_header + 70
-        if top_10.empty:
-            no_data_text = score_font.render("Nenhuma pontuação registrada ainda.", True, (200, 200, 200))
-            screen.blit(no_data_text, (WIN_WIDTH // 2 - no_data_text.get_width() // 2, y_offset + 50))
-            
-        for i, row in enumerate(top_10.itertuples()):
-            rank_str = f"{i+1}."
-            name_str = str(row.name).title() # Capitaliza o nome
-            points_str = f"{int(row.points)}"
-            time_str = f"{row.time:.2f}s"
-
-            screen.blit(score_font.render(rank_str, True, (255, 255, 255)), (col_rank, y_offset))
-            screen.blit(score_font.render(name_str, True, (255, 255, 255)), (col_name, y_offset))
-            screen.blit(score_font.render(points_str, True, (255, 255, 255)), (col_points, y_offset))
-            screen.blit(score_font.render(time_str, True, (255, 255, 255)), (col_time, y_offset))
-            y_offset += 40
-
-        # Botão Fechar (agora desenhado por último)
-        hover = button_rect.collidepoint(mouse_x, mouse_y)
-        color = (200, 0, 0) if hover else (150, 0, 0) # Vermelho para fechar
-
-        pygame.draw.rect(screen, color, button_rect, border_radius=10)
-        pygame.draw.rect(screen, (255, 255, 255), button_rect, 2, border_radius=10)
-        
-        text_x_pos = button_rect.x + (button_rect.width - button_text.get_width()) // 2
-        text_y_pos = button_rect.y + (button_rect.height - button_text.get_height()) // 2
-        screen.blit(button_text, (text_x_pos, text_y_pos))
-
-        pygame.display.flip()
-        clock.tick(30)
-      
               
 def main():
     WIN_WIDTH, WIN_HEIGHT = 1080, 720
@@ -584,7 +560,7 @@ def main():
         
     df.to_csv(os.path.join("assets", "scores.csv"), index=False)
     
-    leader_board(screen, font, clock, background_image_path)
+    score_message_screen(screen, font, clock, background_image_path, user_name, user_score)
     
     pygame.quit()
 
